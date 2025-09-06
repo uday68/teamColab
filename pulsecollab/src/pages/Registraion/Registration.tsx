@@ -12,11 +12,14 @@ import {
   CheckCircle,
   ArrowLeft
 } from 'lucide-react';
+import { apiService } from '../../services/api';
 
 const Registration = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -34,19 +37,60 @@ const Registration = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
     if (!formData.acceptTerms) {
-      alert('Please accept the terms and conditions');
+      setError('Please accept the terms and conditions');
       return;
     }
-    // Here you would typically make an API call to register the user
-    console.log('Registration data:', formData);
-    navigate('/dashboard');
+    
+    // Validate password requirements
+    const passwordRequirements = [
+      { text: 'At least 8 characters', met: formData.password.length >= 8 },
+      { text: 'Contains uppercase letter', met: /[A-Z]/.test(formData.password) },
+      { text: 'Contains lowercase letter', met: /[a-z]/.test(formData.password) },
+      { text: 'Contains number', met: /\d/.test(formData.password) }
+    ];
+    
+    const unmetRequirements = passwordRequirements.filter(req => !req.met);
+    if (unmetRequirements.length > 0) {
+      setError(`Password must meet all requirements: ${unmetRequirements.map(req => req.text.toLowerCase()).join(', ')}`);
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const userData = {
+        username: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName
+      };
+      
+      const response = await apiService.register(userData);
+      console.log('Registration successful:', response);
+      
+      // Show success message briefly before redirecting
+      setError('Registration successful! Redirecting to dashboard...');
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+      
+    } catch (error: unknown) {
+      console.error('Registration failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const passwordRequirements = [
@@ -81,6 +125,16 @@ const Registration = () => {
 
         {/* Registration Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {error && (
+            <div className={`mb-6 p-3 rounded-lg text-center ${
+              error.includes('successful') 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
@@ -239,9 +293,12 @@ const Registration = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full gradient-primary text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center"
+              disabled={loading}
+              className={`w-full gradient-primary text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center ${
+                loading ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

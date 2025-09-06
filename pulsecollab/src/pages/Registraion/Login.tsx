@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Google, Github } from 'lucide-react';
+import { Chrome, Github } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiService } from '../../services/api';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Trigger slide-up and fade-in animation on mount
@@ -18,20 +20,41 @@ const Login: React.FC = () => {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
-    // Simulate login success animation
-    const button = document.querySelector('.cta-button');
-    if (button) {
-      button.classList.add('animate-success');
+
+    setLoading(true);
+    
+    try {
+      const response = await apiService.login(email, password);
+      
+      // Success animation
+      const button = document.querySelector('.cta-button');
+      if (button) {
+        button.classList.add('animate-success');
+      }
+      
+      // Store user data if needed
+      if (rememberMe && response.user) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+      
       setTimeout(() => {
-        // Redirect to dashboard
         navigate('/dashboard');
       }, 1000);
+      
+    } catch (error: unknown) {
+      console.error('Login failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please check your credentials and try again.';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,16 +139,19 @@ const Login: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="cta-button w-full py-3 gradient-primary text-white rounded-full font-inter font-semibold text-lg hover:shadow-glow transition-all duration-300"
+            disabled={loading}
+            className={`cta-button w-full py-3 gradient-primary text-white rounded-full font-inter font-semibold text-lg hover:shadow-glow transition-all duration-300 ${
+              loading ? 'opacity-75 cursor-not-allowed' : ''
+            }`}
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
         {/* OAuth Buttons */}
         <div className="mt-6 space-y-3">
           <button className="w-full py-3 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-            <Google className="w-5 h-5 mr-2" /> Continue with Google
+            <Chrome className="w-5 h-5 mr-2" /> Continue with Google
           </button>
           <button className="w-full py-3 flex items-center justify-center border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
             <Github className="w-5 h-5 mr-2" /> Continue with GitHub

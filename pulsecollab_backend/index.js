@@ -20,6 +20,7 @@ import { projectService, taskService } from './services/project.js';
 import { teamService } from './services/team.js';
 import { analyticsService, healthService } from './services/analytics.js';
 import appConfig from './config/app.js';
+import twoFactorRoutes from './routes/2fa.js';
 
 // Load environment variables
 dotenv.config();
@@ -228,6 +229,9 @@ app.post('/api/auth/2fa/disable', authenticateToken, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+// ===== NOTIFICATION-BASED 2FA ROUTES =====
+twoFactorRoutes(app);
 
 // ===== TEAM MANAGEMENT ROUTES =====
 app.get('/api/teams', authenticateToken, async (req, res) => {
@@ -836,6 +840,1166 @@ app.get('/api/rooms/:roomId/info', (req, res) => {
     settings: room.settings,
     createdAt: room.createdAt
   });
+});
+
+// Team Workspace endpoints
+app.get('/api/teams/workspace', authenticateToken, async (req, res) => {
+  try {
+    // Mock team workspace data with proper color palette
+    const workspaceData = {
+      teams: [
+        {
+          id: 1,
+          name: 'Product Development',
+          description: 'Building the next generation of products',
+          memberCount: 12,
+          projectCount: 8,
+          color: '#3b82f6',
+          bgColor: '#eff6ff',
+          status: 'active',
+          avatar: '/placeholder.svg',
+          members: [
+            { id: 1, name: 'Alice Johnson', role: 'Team Lead', avatar: '/placeholder.svg', status: 'online' },
+            { id: 2, name: 'Bob Smith', role: 'Developer', avatar: '/placeholder.svg', status: 'offline' },
+            { id: 3, name: 'Carol Davis', role: 'Designer', avatar: '/placeholder.svg', status: 'online' },
+          ],
+          recentActivity: [
+            { type: 'project', message: 'New project "Mobile App v2" created', time: '2 hours ago' },
+            { type: 'member', message: 'Alice Johnson joined the team', time: '1 day ago' },
+          ],
+          stats: {
+            tasksCompleted: 156,
+            ongoingProjects: 3,
+            teamVelocity: 92
+          }
+        },
+        {
+          id: 2,
+          name: 'Marketing & Growth',
+          description: 'Driving user acquisition and engagement',
+          memberCount: 8,
+          projectCount: 5,
+          color: '#22c55e',
+          bgColor: '#f0fdf4',
+          status: 'active',
+          avatar: '/placeholder.svg',
+          members: [
+            { id: 4, name: 'David Wilson', role: 'Marketing Manager', avatar: '/placeholder.svg', status: 'online' },
+            { id: 5, name: 'Emma Brown', role: 'Content Creator', avatar: '/placeholder.svg', status: 'away' },
+          ],
+          recentActivity: [
+            { type: 'campaign', message: 'Q4 Campaign launched successfully', time: '3 hours ago' },
+          ],
+          stats: {
+            tasksCompleted: 89,
+            ongoingProjects: 2,
+            teamVelocity: 87
+          }
+        },
+        {
+          id: 3,
+          name: 'Engineering',
+          description: 'Backend infrastructure and platform development',
+          memberCount: 15,
+          projectCount: 12,
+          color: '#a855f7',
+          bgColor: '#faf5ff',
+          status: 'active',
+          avatar: '/placeholder.svg',
+          members: [
+            { id: 6, name: 'Frank Miller', role: 'Senior Engineer', avatar: '/placeholder.svg', status: 'online' },
+            { id: 7, name: 'Grace Lee', role: 'DevOps', avatar: '/placeholder.svg', status: 'online' },
+          ],
+          recentActivity: [
+            { type: 'deployment', message: 'Production deployment completed', time: '1 hour ago' },
+          ],
+          stats: {
+            tasksCompleted: 234,
+            ongoingProjects: 5,
+            teamVelocity: 95
+          }
+        },
+        {
+          id: 4,
+          name: 'Design System',
+          description: 'Creating consistent user experiences',
+          memberCount: 6,
+          projectCount: 4,
+          color: '#f59e0b',
+          bgColor: '#fffbeb',
+          status: 'active',
+          avatar: '/placeholder.svg',
+          members: [
+            { id: 8, name: 'Henry Chang', role: 'Lead Designer', avatar: '/placeholder.svg', status: 'online' },
+          ],
+          recentActivity: [
+            { type: 'design', message: 'New component library updated', time: '4 hours ago' },
+          ],
+          stats: {
+            tasksCompleted: 67,
+            ongoingProjects: 2,
+            teamVelocity: 88
+          }
+        }
+      ],
+      projects: [
+        {
+          id: 1,
+          name: 'PulseCollab Mobile App',
+          description: 'Native mobile application for iOS and Android',
+          progress: 75,
+          status: 'In Progress',
+          priority: 'High',
+          dueDate: '2025-02-15',
+          teamId: 1,
+          color: '#3b82f6',
+          members: 5,
+          tasks: { total: 24, completed: 18 }
+        },
+        {
+          id: 2,
+          name: 'Q4 Marketing Campaign',
+          description: 'Comprehensive marketing strategy for Q4',
+          progress: 60,
+          status: 'In Progress',
+          priority: 'Medium',
+          dueDate: '2025-01-30',
+          teamId: 2,
+          color: '#22c55e',
+          members: 4,
+          tasks: { total: 15, completed: 9 }
+        },
+        {
+          id: 3,
+          name: 'Infrastructure Upgrade',
+          description: 'Scaling backend infrastructure for growth',
+          progress: 90,
+          status: 'Review',
+          priority: 'High',
+          dueDate: '2025-01-20',
+          teamId: 3,
+          color: '#a855f7',
+          members: 8,
+          tasks: { total: 32, completed: 29 }
+        }
+      ],
+      colorPalette: {
+        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+        success: { 50: '#f0fdf4', 100: '#dcfce7', 500: '#22c55e', 600: '#16a34a' },
+        warning: { 50: '#fffbeb', 100: '#fef3c7', 500: '#f59e0b', 600: '#d97706' },
+        danger: { 50: '#fef2f2', 100: '#fee2e2', 500: '#ef4444', 600: '#dc2626' },
+        purple: { 50: '#faf5ff', 100: '#f3e8ff', 500: '#a855f7', 600: '#9333ea' },
+        indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5' }
+      }
+    };
+
+    res.json(workspaceData);
+  } catch (error) {
+    console.error('Error fetching workspace data:', error);
+    res.status(500).json({ error: 'Failed to fetch workspace data' });
+  }
+});
+
+app.post('/api/teams/workspace/create', authenticateToken, async (req, res) => {
+  try {
+    const { name, description, color } = req.body;
+    const userId = req.user.id;
+
+    // Mock team creation
+    const newTeam = {
+      id: Date.now(),
+      name,
+      description,
+      color,
+      bgColor: color + '20', // Add transparency
+      memberCount: 1,
+      projectCount: 0,
+      status: 'active',
+      members: [{
+        id: userId,
+        name: req.user.username || 'User',
+        role: 'Team Lead',
+        avatar: '/placeholder.svg',
+        status: 'online'
+      }],
+      recentActivity: [{
+        type: 'team',
+        message: `Team "${name}" was created`,
+        time: 'Just now'
+      }],
+      stats: {
+        tasksCompleted: 0,
+        ongoingProjects: 0,
+        teamVelocity: 0
+      }
+    };
+
+    res.json({ 
+      success: true, 
+      team: newTeam,
+      message: 'Team created successfully'
+    });
+  } catch (error) {
+    console.error('Error creating team:', error);
+    res.status(500).json({ error: 'Failed to create team' });
+  }
+});
+
+app.get('/api/teams/:teamId/details', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    
+    // Mock team details
+    const teamDetails = {
+      id: parseInt(teamId),
+      name: 'Product Development',
+      description: 'Building the next generation of products',
+      color: '#3b82f6',
+      bgColor: '#eff6ff',
+      members: [
+        { id: 1, name: 'Alice Johnson', role: 'Team Lead', avatar: '/placeholder.svg', status: 'online', joinDate: '2024-01-15' },
+        { id: 2, name: 'Bob Smith', role: 'Senior Developer', avatar: '/placeholder.svg', status: 'offline', joinDate: '2024-02-01' },
+        { id: 3, name: 'Carol Davis', role: 'UI/UX Designer', avatar: '/placeholder.svg', status: 'online', joinDate: '2024-02-15' },
+        { id: 4, name: 'David Wilson', role: 'Frontend Developer', avatar: '/placeholder.svg', status: 'away', joinDate: '2024-03-01' },
+      ],
+      projects: [
+        { id: 1, name: 'Mobile App v2', progress: 75, status: 'In Progress' },
+        { id: 2, name: 'Web Dashboard', progress: 45, status: 'Planning' },
+        { id: 3, name: 'API Redesign', progress: 90, status: 'Review' }
+      ],
+      stats: {
+        totalTasks: 156,
+        completedTasks: 142,
+        inProgressTasks: 14,
+        teamVelocity: 92,
+        averageTaskTime: '2.3 days',
+        collaboration: 85
+      },
+      activity: [
+        { type: 'task', message: 'Alice completed "User Authentication" task', time: '1 hour ago' },
+        { type: 'project', message: 'New project "API v3" was created', time: '3 hours ago' },
+        { type: 'member', message: 'David joined the team', time: '1 day ago' }
+      ]
+    };
+
+    res.json(teamDetails);
+  } catch (error) {
+    console.error('Error fetching team details:', error);
+    res.status(500).json({ error: 'Failed to fetch team details' });
+  }
+});
+
+// ===== TEAM MEMBER DASHBOARD ROUTES =====
+app.get('/api/team/dashboard/:memberId', authenticateToken, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    
+    // Mock team member dashboard data
+    const dashboardData = {
+      member: {
+        id: parseInt(memberId),
+        name: 'John Doe',
+        role: 'Senior Developer',
+        avatar: '/placeholder.svg',
+        status: 'online',
+        team: 'Product Development',
+        joinDate: '2024-01-15',
+        skillLevel: 'Senior',
+        performance: {
+          tasksCompleted: 45,
+          onTimeDelivery: 92,
+          codeQuality: 88,
+          teamCollaboration: 95
+        }
+      },
+      currentTasks: [
+        {
+          id: 1,
+          title: 'Implement user authentication',
+          priority: 'high',
+          status: 'in-progress',
+          dueDate: '2025-09-10',
+          estimatedHours: 12,
+          spentHours: 8,
+          project: 'PulseCollab Platform',
+          assignedBy: { name: 'Alice Johnson', role: 'Team Lead' }
+        },
+        {
+          id: 2,
+          title: 'Fix payment gateway integration',
+          priority: 'critical',
+          status: 'review',
+          dueDate: '2025-09-08',
+          estimatedHours: 8,
+          spentHours: 10,
+          project: 'E-commerce Module',
+          assignedBy: { name: 'Bob Smith', role: 'Project Manager' }
+        },
+        {
+          id: 3,
+          title: 'Update API documentation',
+          priority: 'low',
+          status: 'todo',
+          dueDate: '2025-09-15',
+          estimatedHours: 4,
+          spentHours: 0,
+          project: 'API v2',
+          assignedBy: { name: 'Alice Johnson', role: 'Team Lead' }
+        }
+      ],
+      teamMembers: [
+        {
+          id: 1,
+          name: 'Alice Johnson',
+          role: 'Team Lead',
+          avatar: '/placeholder.svg',
+          status: 'online',
+          lastActive: 'now',
+          currentTask: 'Code review session'
+        },
+        {
+          id: 2,
+          name: 'Bob Smith',
+          role: 'Project Manager',
+          avatar: '/placeholder.svg',
+          status: 'away',
+          lastActive: '30 min ago',
+          currentTask: 'Client meeting'
+        },
+        {
+          id: 3,
+          name: 'Carol Davis',
+          role: 'Designer',
+          avatar: '/placeholder.svg',
+          status: 'online',
+          lastActive: '5 min ago',
+          currentTask: 'UI mockup design'
+        },
+        {
+          id: 4,
+          name: 'David Wilson',
+          role: 'Developer',
+          avatar: '/placeholder.svg',
+          status: 'offline',
+          lastActive: '2 hours ago',
+          currentTask: 'Feature development'
+        }
+      ],
+      recentActivity: [
+        {
+          id: 1,
+          type: 'task_completed',
+          message: 'Completed "API Integration" task',
+          timestamp: '2 hours ago',
+          priority: 'medium'
+        },
+        {
+          id: 2,
+          type: 'message_received',
+          message: 'New urgent message from Team Lead',
+          timestamp: '3 hours ago',
+          priority: 'high'
+        },
+        {
+          id: 3,
+          type: 'task_assigned',
+          message: 'New task assigned: "Bug fixes"',
+          timestamp: '1 day ago',
+          priority: 'medium'
+        }
+      ],
+      upcomingDeadlines: [
+        {
+          id: 1,
+          task: 'Fix payment gateway integration',
+          dueDate: '2025-09-08',
+          priority: 'critical',
+          hoursLeft: 6
+        },
+        {
+          id: 2,
+          task: 'Implement user authentication',
+          dueDate: '2025-09-10',
+          priority: 'high',
+          hoursLeft: 18
+        }
+      ]
+    };
+
+    res.json(dashboardData);
+  } catch (error) {
+    console.error('Error fetching team member dashboard:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard data' });
+  }
+});
+
+// ===== TEAM MESSAGING SYSTEM ROUTES =====
+app.get('/api/team/messages/:teamId', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { limit = 50, offset = 0 } = req.query;
+    
+    // Mock team messages with priority and role-based colors
+    const messages = [
+      {
+        id: 1,
+        senderId: 1,
+        senderName: 'Alice Johnson',
+        senderRole: 'Team Lead',
+        message: 'Team meeting at 3 PM today. Please review the sprint goals beforehand.',
+        timestamp: '2025-09-06T10:30:00Z',
+        priority: 'high',
+        replyTime: 2, // hours
+        status: 'sent',
+        reactions: { '👍': 3, '✅': 2 },
+        mentions: [2, 3, 4],
+        isEdited: false,
+        threadReplies: 2
+      },
+      {
+        id: 2,
+        senderId: 3,
+        senderName: 'Carol Davis',
+        senderRole: 'Designer',
+        message: 'I\'ve uploaded the new UI mockups to the shared folder. Please take a look!',
+        timestamp: '2025-09-06T09:15:00Z',
+        priority: 'medium',
+        replyTime: 4,
+        status: 'delivered',
+        reactions: { '🎨': 2, '👍': 1 },
+        mentions: [1],
+        isEdited: false,
+        threadReplies: 0,
+        attachments: [
+          { name: 'UI_Mockup_v2.fig', size: '2.5MB', type: 'figma' }
+        ]
+      },
+      {
+        id: 3,
+        senderId: 2,
+        senderName: 'Bob Smith',
+        senderRole: 'Project Manager',
+        message: 'URGENT: Client demo moved to tomorrow morning. We need to finalize the presentation.',
+        timestamp: '2025-09-06T08:45:00Z',
+        priority: 'critical',
+        replyTime: 1,
+        status: 'read',
+        reactions: { '⚠️': 5, '👍': 2 },
+        mentions: [1, 3, 4, 5],
+        isEdited: false,
+        threadReplies: 5
+      },
+      {
+        id: 4,
+        senderId: 4,
+        senderName: 'David Wilson',
+        senderRole: 'Developer',
+        message: 'The payment gateway integration is complete. Ready for testing.',
+        timestamp: '2025-09-06T07:20:00Z',
+        priority: 'medium',
+        replyTime: 6,
+        status: 'read',
+        reactions: { '✅': 3, '🚀': 1 },
+        mentions: [1, 2],
+        isEdited: false,
+        threadReplies: 1
+      },
+      {
+        id: 5,
+        senderId: 5,
+        senderName: 'Eve Martinez',
+        senderRole: 'QA Engineer',
+        message: 'Found some bugs in the authentication flow. Creating tickets now.',
+        timestamp: '2025-09-05T16:30:00Z',
+        priority: 'high',
+        replyTime: 3,
+        status: 'read',
+        reactions: { '🐛': 2, '👍': 1 },
+        mentions: [1, 4],
+        isEdited: true,
+        threadReplies: 3
+      }
+    ];
+
+    const totalMessages = messages.length;
+    const paginatedMessages = messages.slice(offset, offset + limit);
+
+    res.json({
+      messages: paginatedMessages,
+      pagination: {
+        total: totalMessages,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        hasMore: offset + limit < totalMessages
+      },
+      teamInfo: {
+        id: parseInt(teamId),
+        name: 'Product Development Team',
+        memberCount: 8,
+        onlineCount: 5
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching team messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+app.post('/api/team/messages/:teamId/send', authenticateToken, async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { message, priority = 'medium', mentions = [], replyTime } = req.body;
+    const userId = req.user.id;
+
+    // Mock message creation
+    const newMessage = {
+      id: Date.now(),
+      senderId: userId,
+      senderName: req.user.username || 'User',
+      senderRole: req.user.role || 'Team Member',
+      message,
+      timestamp: new Date().toISOString(),
+      priority,
+      replyTime: replyTime || 24, // default 24 hours
+      status: 'sent',
+      reactions: {},
+      mentions,
+      isEdited: false,
+      threadReplies: 0
+    };
+
+    // In real implementation, save to database and broadcast via socket
+    res.json({
+      success: true,
+      message: newMessage,
+      notification: `Message sent with ${priority} priority`
+    });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+app.put('/api/team/messages/:messageId/priority', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { priority } = req.body;
+    const userId = req.user.id;
+
+    // Mock priority update (only sender can update)
+    const updatedMessage = {
+      id: parseInt(messageId),
+      priority,
+      updatedAt: new Date().toISOString(),
+      updatedBy: userId
+    };
+
+    res.json({
+      success: true,
+      message: updatedMessage,
+      notification: `Message priority updated to ${priority}`
+    });
+  } catch (error) {
+    console.error('Error updating message priority:', error);
+    res.status(500).json({ error: 'Failed to update priority' });
+  }
+});
+
+app.post('/api/team/messages/:messageId/react', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.id;
+
+    // Mock reaction handling
+    res.json({
+      success: true,
+      messageId: parseInt(messageId),
+      emoji,
+      userId,
+      action: 'added'
+    });
+  } catch (error) {
+    console.error('Error adding reaction:', error);
+    res.status(500).json({ error: 'Failed to add reaction' });
+  }
+});
+
+app.get('/api/team/messages/:messageId/thread', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    
+    // Mock thread replies
+    const threadReplies = [
+      {
+        id: 1,
+        parentId: parseInt(messageId),
+        senderId: 2,
+        senderName: 'Bob Smith',
+        senderRole: 'Project Manager',
+        message: 'Agreed! Let\'s prioritize this.',
+        timestamp: '2025-09-06T11:00:00Z',
+        reactions: { '👍': 2 }
+      },
+      {
+        id: 2,
+        parentId: parseInt(messageId),
+        senderId: 4,
+        senderName: 'David Wilson',
+        senderRole: 'Developer',
+        message: 'I can help with the implementation.',
+        timestamp: '2025-09-06T11:15:00Z',
+        reactions: { '🙋': 1 }
+      }
+    ];
+
+    res.json({ replies: threadReplies });
+  } catch (error) {
+    console.error('Error fetching thread:', error);
+    res.status(500).json({ error: 'Failed to fetch thread' });
+  }
+});
+
+// ===== TEAM MEMBER PERFORMANCE ROUTES =====
+app.get('/api/team/member/:memberId/performance', authenticateToken, async (req, res) => {
+  try {
+    const { memberId } = req.params;
+    
+    const performanceData = {
+      memberId: parseInt(memberId),
+      period: '30_days',
+      metrics: {
+        tasksCompleted: 45,
+        averageResponseTime: 2.3, // hours
+        onTimeDelivery: 92, // percentage
+        codeQuality: 88, // percentage
+        teamCollaboration: 95, // percentage
+        messageReplyTime: 1.5 // hours average
+      },
+      trends: {
+        productivity: 'increasing',
+        responseTime: 'decreasing',
+        quality: 'stable'
+      },
+      achievements: [
+        { name: 'Quick Responder', description: 'Average reply time under 2 hours', earned: '2025-09-01' },
+        { name: 'Quality Code', description: '90%+ code review score', earned: '2025-08-25' }
+      ],
+      weeklyStats: [
+        { week: 'Week 1', tasks: 12, quality: 90, responseTime: 1.8 },
+        { week: 'Week 2', tasks: 10, quality: 85, responseTime: 2.1 },
+        { week: 'Week 3', tasks: 13, quality: 92, responseTime: 1.5 },
+        { week: 'Week 4', tasks: 10, quality: 88, responseTime: 2.0 }
+      ]
+    };
+
+    res.json(performanceData);
+  } catch (error) {
+    console.error('Error fetching performance data:', error);
+    res.status(500).json({ error: 'Failed to fetch performance data' });
+  }
+});
+
+// ===== ADMIN DASHBOARD ROUTES =====
+app.get('/api/admin/overview', authenticateToken, async (req, res) => {
+  try {
+    // Check if user has admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Mock admin overview data
+    const adminOverview = {
+      systemMetrics: {
+        totalUsers: 1247,
+        activeUsers: 892,
+        totalTeams: 84,
+        activeTeams: 76,
+        totalProjects: 228,
+        activeProjects: 185,
+        systemUptime: '99.98%',
+        storageUsed: 67,
+        responseTime: '145ms',
+        dailyActiveUsers: 892
+      },
+      userGrowth: [
+        { month: 'Jan', users: 400, teams: 45, projects: 120 },
+        { month: 'Feb', users: 450, teams: 52, projects: 135 },
+        { month: 'Mar', users: 520, teams: 48, projects: 142 },
+        { month: 'Apr', users: 580, teams: 61, projects: 158 },
+        { month: 'May', users: 630, teams: 68, projects: 167 },
+        { month: 'Jun', users: 720, teams: 74, projects: 185 },
+        { month: 'Jul', users: 780, teams: 79, projects: 198 },
+        { month: 'Aug', users: 850, teams: 84, projects: 215 },
+        { month: 'Sep', users: 892, teams: 88, projects: 228 }
+      ],
+      systemHealth: {
+        cpu: 23,
+        memory: 67,
+        disk: 45,
+        network: 'stable',
+        services: {
+          database: 'healthy',
+          redis: 'healthy',
+          fileStorage: 'healthy',
+          notifications: 'healthy',
+          webrtc: 'healthy',
+          auth: 'healthy'
+        }
+      },
+      recentActivity: [
+        {
+          id: 1,
+          timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+          level: 'info',
+          message: 'User login successful',
+          user: 'alice.johnson@company.com',
+          module: 'auth'
+        },
+        {
+          id: 2,
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          level: 'warning',
+          message: 'High memory usage detected',
+          module: 'system'
+        },
+        {
+          id: 3,
+          timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+          level: 'info',
+          message: 'New team created: Engineering',
+          user: 'david.wilson@company.com',
+          module: 'teams'
+        }
+      ]
+    };
+
+    res.json(adminOverview);
+  } catch (error) {
+    console.error('Error fetching admin overview:', error);
+    res.status(500).json({ error: 'Failed to fetch admin overview' });
+  }
+});
+
+app.get('/api/admin/users', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { search, status, role, limit = 50, offset = 0 } = req.query;
+
+    // Mock users data
+    const users = [
+      {
+        id: 1,
+        name: 'Alice Johnson',
+        email: 'alice.johnson@company.com',
+        role: 'Team Lead',
+        status: 'active',
+        joinDate: '2024-01-15',
+        lastActive: '2 minutes ago',
+        teams: 2,
+        projects: 8,
+        avatar: '/placeholder.svg'
+      },
+      {
+        id: 2,
+        name: 'Bob Smith',
+        email: 'bob.smith@company.com',
+        role: 'Developer',
+        status: 'active',
+        joinDate: '2024-02-20',
+        lastActive: '1 hour ago',
+        teams: 1,
+        projects: 5,
+        avatar: '/placeholder.svg'
+      },
+      {
+        id: 3,
+        name: 'Carol Davis',
+        email: 'carol.davis@company.com',
+        role: 'Designer',
+        status: 'inactive',
+        joinDate: '2024-03-10',
+        lastActive: '2 days ago',
+        teams: 1,
+        projects: 3,
+        avatar: '/placeholder.svg'
+      },
+      {
+        id: 4,
+        name: 'David Wilson',
+        email: 'david.wilson@company.com',
+        role: 'Project Manager',
+        status: 'active',
+        joinDate: '2024-01-05',
+        lastActive: '5 minutes ago',
+        teams: 3,
+        projects: 12,
+        avatar: '/placeholder.svg'
+      },
+      {
+        id: 5,
+        name: 'Eve Martinez',
+        email: 'eve.martinez@company.com',
+        role: 'QA Engineer',
+        status: 'suspended',
+        joinDate: '2024-04-12',
+        lastActive: '1 week ago',
+        teams: 1,
+        projects: 2,
+        avatar: '/placeholder.svg'
+      }
+    ];
+
+    // Apply filters
+    let filteredUsers = users;
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filteredUsers = filteredUsers.filter(user =>
+        user.name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        user.role.toLowerCase().includes(searchLower)
+      );
+    }
+    if (status) {
+      filteredUsers = filteredUsers.filter(user => user.status === status);
+    }
+    if (role) {
+      filteredUsers = filteredUsers.filter(user => user.role === role);
+    }
+
+    const total = filteredUsers.length;
+    const paginatedUsers = filteredUsers.slice(offset, offset + parseInt(limit));
+
+    res.json({
+      users: paginatedUsers,
+      pagination: {
+        total,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        hasMore: offset + parseInt(limit) < total
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.get('/api/admin/teams', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Mock teams data
+    const teams = [
+      {
+        id: 1,
+        name: 'Product Development',
+        memberCount: 12,
+        projectCount: 8,
+        status: 'active',
+        createdDate: '2024-01-10',
+        owner: 'Alice Johnson',
+        performance: 92
+      },
+      {
+        id: 2,
+        name: 'Marketing Team',
+        memberCount: 8,
+        projectCount: 5,
+        status: 'active',
+        createdDate: '2024-02-15',
+        owner: 'David Wilson',
+        performance: 87
+      },
+      {
+        id: 3,
+        name: 'Design Team',
+        memberCount: 6,
+        projectCount: 4,
+        status: 'active',
+        createdDate: '2024-03-01',
+        owner: 'Carol Davis',
+        performance: 94
+      },
+      {
+        id: 4,
+        name: 'QA Team',
+        memberCount: 4,
+        projectCount: 3,
+        status: 'inactive',
+        createdDate: '2024-04-20',
+        owner: 'Eve Martinez',
+        performance: 78
+      }
+    ];
+
+    res.json({ teams });
+  } catch (error) {
+    console.error('Error fetching admin teams:', error);
+    res.status(500).json({ error: 'Failed to fetch teams' });
+  }
+});
+
+app.get('/api/admin/system-logs', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { level, module, limit = 50, offset = 0 } = req.query;
+
+    // Mock system logs
+    const logs = [
+      {
+        id: 1,
+        timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+        level: 'info',
+        message: 'User login successful',
+        user: 'alice.johnson@company.com',
+        module: 'auth'
+      },
+      {
+        id: 2,
+        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+        level: 'warning',
+        message: 'High memory usage detected',
+        module: 'system'
+      },
+      {
+        id: 3,
+        timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+        level: 'error',
+        message: 'Failed to send notification email',
+        user: 'bob.smith@company.com',
+        module: 'notification'
+      },
+      {
+        id: 4,
+        timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        level: 'info',
+        message: 'New team created: Engineering',
+        user: 'david.wilson@company.com',
+        module: 'teams'
+      },
+      {
+        id: 5,
+        timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        level: 'warning',
+        message: 'Database connection timeout',
+        module: 'database'
+      }
+    ];
+
+    // Apply filters
+    let filteredLogs = logs;
+    if (level) {
+      filteredLogs = filteredLogs.filter(log => log.level === level);
+    }
+    if (module) {
+      filteredLogs = filteredLogs.filter(log => log.module === module);
+    }
+
+    const total = filteredLogs.length;
+    const paginatedLogs = filteredLogs.slice(offset, offset + parseInt(limit));
+
+    res.json({
+      logs: paginatedLogs,
+      pagination: {
+        total,
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        hasMore: offset + parseInt(limit) < total
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching system logs:', error);
+    res.status(500).json({ error: 'Failed to fetch system logs' });
+  }
+});
+
+app.post('/api/admin/users/:userId/action', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { userId } = req.params;
+    const { action, reason } = req.body;
+
+    // Mock user action handling
+    const actions = ['suspend', 'activate', 'delete', 'reset_password', 'change_role'];
+    
+    if (!actions.includes(action)) {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    // Log the admin action
+    console.log(`Admin ${req.user.id} performed action '${action}' on user ${userId}. Reason: ${reason || 'None provided'}`);
+
+    res.json({
+      success: true,
+      message: `User ${action} action completed successfully`,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error performing user action:', error);
+    res.status(500).json({ error: 'Failed to perform user action' });
+  }
+});
+
+app.get('/api/admin/analytics', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { period = '30d' } = req.query;
+
+    // Mock analytics data
+    const analytics = {
+      userEngagement: {
+        dailyActiveUsers: 892,
+        weeklyActiveUsers: 1156,
+        monthlyActiveUsers: 1247,
+        avgSessionDuration: '24 minutes',
+        avgPagesPerSession: 12.5
+      },
+      systemPerformance: {
+        avgResponseTime: 145,
+        uptime: 99.98,
+        errorRate: 0.02,
+        throughput: 1250
+      },
+      contentStats: {
+        totalMessages: 15420,
+        totalFiles: 2890,
+        totalMeetings: 567,
+        totalProjects: 228
+      },
+      securityMetrics: {
+        failedLogins: 23,
+        suspiciousActivity: 2,
+        twoFactorEnabled: 78.5,
+        passwordResets: 15
+      }
+    };
+
+    res.json({ analytics, period });
+  } catch (error) {
+    console.error('Error fetching admin analytics:', error);
+    res.status(500).json({ error: 'Failed to fetch analytics' });
+  }
+});
+
+app.put('/api/admin/settings', authenticateToken, async (req, res) => {
+  try {
+    // Check admin privileges
+    if (req.user.role !== 'admin' && req.user.role !== 'system_admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const settings = req.body;
+
+    // Mock settings update
+    console.log('Admin settings updated:', settings);
+
+    res.json({
+      success: true,
+      message: 'Settings updated successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error updating admin settings:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// ===== PRIORITY AND COLOR CONFIGURATION =====
+app.get('/api/config/message-colors', (req, res) => {
+  const messageColorConfig = {
+    priorities: {
+      critical: {
+        background: '#fee2e2',
+        border: '#fca5a5',
+        text: '#dc2626',
+        icon: '🚨'
+      },
+      high: {
+        background: '#fef3c7',
+        border: '#fbbf24',
+        text: '#d97706',
+        icon: '⚠️'
+      },
+      medium: {
+        background: '#dbeafe',
+        border: '#60a5fa',
+        text: '#2563eb',
+        icon: 'ℹ️'
+      },
+      low: {
+        background: '#dcfce7',
+        border: '#4ade80',
+        text: '#16a34a',
+        icon: '📝'
+      }
+    },
+    roles: {
+      'Team Lead': {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        border: '#667eea',
+        text: '#ffffff',
+        badge: '👑'
+      },
+      'Project Manager': {
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        border: '#f093fb',
+        text: '#ffffff',
+        badge: '📋'
+      },
+      'Senior Developer': {
+        background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        border: '#4facfe',
+        text: '#ffffff',
+        badge: '💻'
+      },
+      'Developer': {
+        background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        border: '#43e97b',
+        text: '#ffffff',
+        badge: '🔧'
+      },
+      'Designer': {
+        background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        border: '#fa709a',
+        text: '#ffffff',
+        badge: '🎨'
+      },
+      'QA Engineer': {
+        background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+        border: '#a8edea',
+        text: '#374151',
+        badge: '🔍'
+      }
+    },
+    status: {
+      online: '#10b981',
+      away: '#f59e0b',
+      busy: '#ef4444',
+      offline: '#6b7280'
+    }
+  };
+
+  res.json(messageColorConfig);
 });
 
 // WebRTC Signaling & Chat via Socket.IO
