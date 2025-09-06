@@ -4,6 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+
+import Registeration from "./pages/Registraion/Registration";
+
+import Login from "./pages/Registraion/Login";
+import HomePage from "./pages/HomePage";
+import VideoCall from "./components/VideoCall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,7 +21,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Registeration />} />
+          <Route path="/dashboard" element={<Index />} />
+          {/* Add other routes here */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/video-call" element={<VideoCall />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
