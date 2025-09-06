@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PulseCollab Design System - Modern Collaboration Suite */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Core Colors - PulseCollab Palette */
+    --background: 220 13% 98%;
+    --foreground: 220 9% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 15%;
+
+    /* Primary - Vibrant Blue (#3A86FF) */
+    --primary: 217 100% 62%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 100% 75%;
+
+    /* Secondary - Purple (#8338EC) */
+    --secondary: 266 84% 58%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 266 84% 70%;
+
+    /* Success - Teal (#06D6A0) */
+    --success: 170 97% 44%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning - Yellow (#FFD166) */
+    --warning: 48 100% 70%;
+    --warning-foreground: 220 9% 15%;
+
+    /* Danger - Red (#EF476F) */
+    --danger: 348 83% 61%;
+    --danger-foreground: 0 0% 100%;
+
+    /* Neutral Tones */
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 55%;
+
+    --accent: 217 100% 97%;
+    --accent-foreground: 217 100% 62%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 95%;
+    --ring: 217 100% 62%;
+
+    /* PulseCollab Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 100% 62%), hsl(266 84% 58%));
+    --gradient-success: linear-gradient(135deg, hsl(170 97% 44%), hsl(170 97% 60%));
+    --gradient-warm: linear-gradient(135deg, hsl(48 100% 70%), hsl(348 83% 61%));
+    --gradient-subtle: linear-gradient(135deg, hsl(220 13% 98%), hsl(220 13% 95%));
+    --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 13% 98%));
+
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(220 9% 15% / 0.08);
+    --shadow-medium: 0 4px 16px -4px hsl(220 9% 15% / 0.12);
+    --shadow-large: 0 8px 32px -8px hsl(220 9% 15% / 0.16);
+    --shadow-glow: 0 0 24px hsl(217 100% 62% / 0.3);
+
+    /* Animation Variables */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Dark Theme - PulseCollab */
+    --background: 220 20% 9%;
+    --foreground: 220 13% 95%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 220 13% 95%;
+
+    --popover: 220 15% 12%;
+    --popover-foreground: 220 13% 95%;
+
+    /* Primary stays vibrant in dark mode */
+    --primary: 217 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 217 100% 75%;
+
+    /* Secondary - Slightly brighter purple */
+    --secondary: 266 84% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 266 84% 75%;
+
+    /* Success, Warning, Danger - maintain accessibility */
+    --success: 170 97% 50%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 48 100% 65%;
+    --warning-foreground: 220 20% 9%;
+
+    --danger: 348 83% 65%;
+    --danger-foreground: 0 0% 100%;
+
+    /* Neutral adjustments for dark mode */
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 220 15% 18%;
+    --accent-foreground: 217 100% 65%;
+
+    --border: 220 15% 18%;
+    --input: 220 15% 15%;
+    --ring: 217 100% 65%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 100% 65%), hsl(266 84% 65%));
+    --gradient-success: linear-gradient(135deg, hsl(170 97% 50%), hsl(170 97% 65%));
+    --gradient-warm: linear-gradient(135deg, hsl(48 100% 65%), hsl(348 83% 65%));
+    --gradient-subtle: linear-gradient(135deg, hsl(220 20% 9%), hsl(220 15% 12%));
+    --gradient-card: linear-gradient(135deg, hsl(220 15% 12%), hsl(220 15% 15%));
+
+    /* Dark mode shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 4px 16px -4px hsl(0 0% 0% / 0.4);
+    --shadow-large: 0 8px 32px -8px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 24px hsl(217 100% 65% / 0.4);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+    background: var(--gradient-subtle);
+  }
+
+  /* Typography Scale */
+  .font-inter {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Custom Utility Classes */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-fast {
+    transition: var(--transition-fast);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
