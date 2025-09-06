@@ -140,9 +140,11 @@ const PulseCollabLanding = () => {
                 <Video className="w-4 h-4 mr-1" />
                 Video Call
               </a>
-              <button className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all">
+              <a href="/dashboard" className="text-slate-600 hover:text-blue-600 transition-colors">Dashboard</a>
+              <a href="/login" className="text-slate-600 hover:text-blue-600 transition-colors">Login</a>
+              <a href="/register" className="bg-gradient-to-r from-blue-600 to-teal-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all">
                 Get Started Free
-              </button>
+              </a>
             </div>
           </div>
         </div>

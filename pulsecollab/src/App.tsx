@@ -4,12 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-
-import Registeration from "./pages/Registraion/Registration";
-
+import Dashboard from "./components/Dashboard";
+import Registration from "./pages/Registraion/Registration";
 import Login from "./pages/Registraion/Login";
 import HomePage from "./pages/HomePage";
 import VideoCall from "./components/VideoCall";
+import { CalendarScheduler } from "./components/CalendarScheduler";
+import { AnalyticsDashboard } from './components/AnalyticsDashboard';
+import { SettingsPage } from "./components/settings/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,8 +24,12 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Registeration />} />
-          <Route path="/dashboard" element={<Index />} />
+          <Route path="/register" element={<Registration />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/calendar" element={<CalendarScheduler />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/index" element={<Index />} />
           {/* Add other routes here */}
           <Route path="/" element={<HomePage />} />
           <Route path="/video-call" element={<VideoCall />} />
